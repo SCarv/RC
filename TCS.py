@@ -68,6 +68,36 @@ class TCS:
 			else:
 				print('Malformed message!')
 		
+def sendULR(sock, client):
+	pass
+def sendUNR(sock, client):
+	pass
+def sendSUR(sock, client):
+	pass
+
+def parseULQ(ulq):
+	return ulq == b'ULQ\n'
+
+def parseUNQ(unq):
+	'''
+	Returns the requested language.
+	'''
+	sp = unq.split(b' ')
+	if sp[0] == b'UNQ' and len(sp) == 2  and ulr.endswith(b'\n'): 
+		return sp[1].encode()
+	else:
+		return None
+
+def parseSRG(srg):
+	'''Returns the new TRS in {language: (addr, port)} form'''
+	sp = unq.split(b' ')
+	if len(sp) == 4 and sp[0] == b'SRG' and srg.endswith(b'\n')
+	and sp[3].isdigit():
+		return {sp[1].decode(): (sp[2].decode(), sp[3])}
+
+def parseSUN():
+	pass
+		
 def parse_port():                                                               
     ''' Returns the port number on which this server will run.''' 
     ap = ArgumentParser() 

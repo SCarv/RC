@@ -8,40 +8,30 @@ class Client(Cmd):
 
 	intro = "Welcome to the RC translation client. Type 'help'!"
 	prompt = '(RC) '
-	TCSsocket = nlsocket(AF_INET, SOCK_DGRAM)  # Must be DGRAM!
-	TCS = None # address for the TCS
-	languages = None
+	TCSsock = nlsocket(AF_INET, SOCK_DGRAM)  
+	TCSaddr = ()
+	TRSsock = nlsocket(AF_INET, SOCK_STREAM)
+	languages = []
 	
-	def __init__(self, TCS):
+	def __init__(self, TCSaddr):
 		super().__init__() # call superclass's constructor
-		self.TCS = TCS
+		self.TCSaddr = TCSaddr
 
 	def do_list(self, argv):
 		'Query a list of all avaliable languages.'
-		self.TCSsocket.nlsendto('ULQ'.encode(), self.TCS)
-		msg = msg.split()
-		languages = msg[2:]
+		sendULQ()
+		langs = recvULR()
 		for i in range(len(languages)):
 			print(i,'>', languages[i])
 		self.languages = languages
 
-	def recvULR(self):
-		ulr = self.TCSsocket.nlrecv().decode()
-		return ulr	
-		
-	def recvUNR(self):
-		unr = self.TCSsocket.nlrecv().decode()
-		return unr
-			
 	def do_request(self, args):
 		'Request to connect to a particular TRS.'
-		args = args.split()
-		langc = int(args[0])
-		msg = 'UNQ ' + self.languages[langc]
-		msg = msg.encode()
-		self.TCSsocket.nlsendto(msg, self.TCS)
-		msg = self.TCSsocket.nlrecv()
-		print('Got:', msg)
+		sendUNQ(lang)
+		TRSaddr = recvUNR()
+		TRSsock.connect(TRSaddr)
+		sendTRS(sock)
+		recvTRR(sock)	
 
 	def do_exit(self, argv):
 		'Close the program.'
@@ -53,6 +43,69 @@ class Client(Cmd):
 		'Close the program.'
 		print()
 		self.do_exit(argv)
+
+def sendULQ(sock, client):
+	sock.nlsendto(b'ULQ\n', client)	
+
+def sendUNQ(sock, client):
+
+def sendTRQ(sock, client):
+
+def parseULR(ulr):
+	'''
+	Returns all avaliable languages in a list.
+	'''
+	sp = ulr.split(b' ')
+	langc = sp[0:1]
+	langs = sp[1:]
+	#TODO maybe: check each individual word for length
+	return sp[0] == b'ULR' and ulr.endswith(b'\n') and
+		langc.isdigit() and int(langc) == len(langs) 
+
+def parseUNR(unr):
+	'''
+	Returns the requested TRS in (addr, port) form.
+	'''
+	sp = unr.split(b' ')
+	if sp[0] == b'UNR' and len(sp) == 3 and ulr.endswith(b'\n')
+	and sp[2].isdigit():
+		return (sp[1].decode(), int(sp[2]))
+	else:
+		return None
+
+def recvTRR(socket):
+	if recv_word(3) == b'TRR':
+		2nd = recv_word(3)
+		if 2nd == 't':
+			return recvTRQtext()
+		if 2nd == 'f':
+			return recvTRQfile()
+		if 2nd == 'ERR':
+			return 'ERR'
+		if 2nd == 'NTA':
+			return 'NTA'
+	else:
+		return None
+
+	def recvTRQfile():
+		filename = recv_word(100)
+		size     = recv_word(10)
+		try: 
+			content  = recv(int(size))
+			return ('f', filename.decode(), content)
+		except ValueError: 
+			return None
+				
+	def recvTRQtext():
+		langs = ()
+		N = recv_word(2)
+		if not N.isidigit():
+			return None
+		for _ in range(int(N)):
+			langs += recv_word(LANG_LEN)
+		if not recv(1) == b'\n':
+			return None
+		return langs
 
 def parseTCSaddr():
 	''' Returns the name and the port number of the TCS server.'''
