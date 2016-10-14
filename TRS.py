@@ -1,12 +1,11 @@
 def get_word_trans(lang_file, word):
 	lang_file.seek(0) # restart read pointer to beginning
 	for line in lang_file.readlines():
-		(estrg, tuga) = line.split()
+		(estrg, tuga) = line.split(' ', 1)
 		if tuga == word:
 			return estrg
-	return None # if no such image is avaliable
 		
-def get_image_trans_filename(img_file, filename):
+def get_image_trans(img_file, filename):
 	'''
 	Returns the filename corresponding to the translation image.
 	Returns None if no such translation exists.
@@ -16,7 +15,6 @@ def get_image_trans_filename(img_file, filename):
 		(estrgf, tugaf) = line.split(' ', 1)
 		if tugaf == filename:
 			return estrgf
-	return None # if no such image is avaliable
 
 def TRSloop(listener):
 	while 1:
@@ -38,20 +36,16 @@ def parseSRR():
 	srg.endswith(b'\n'):
 		return sp[1].decode()
 
-def parseSUR():
+def parseSUR(TRSsock, TRSaddr):
 	return NotImplemented #TODO
 
-def recvTRQ(sock):
+def recvTRQ(TRSsock):
 	if sock.recv(4) == b'TRQ ':
 		2nd = sock.recv(1)
 		if 2nd == 't':
 			return recvTRRtext()
 		elif 2nd == 'f':
 			return recvTRRfile()
-		elif 2nd == 'E' and sock.recv(2) == b'RR':
-			return 'ERR'
-		elif 2nd == 'N' and sock.recv(2) == b'TA':
-			return 'NTA'
 	return None
 
 	def recvTRQfile():
